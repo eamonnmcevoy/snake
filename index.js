@@ -71,11 +71,36 @@ class Snake {
   }
 }
 
+class Game {
+  constructor(grid, snake) {
+    this.grid = grid;
+    this.snake = snake;
+  }
+
+  async run() {
+    while (true) {
+      this.grid.render();
+      
+      const updates = this.snake.update();
+      updates.forEach(x => {
+        this.grid.setPoint(x.point, x.state);
+      });
+  
+      await this.sleep(delay);
+    }
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+
 const width = 50;
 const height = 50;
 const blockarea = 10;
 const margin = 1;
 const blocksize = blockarea - margin;
+const delay = 50;
 
 const canvas = document.getElementById('game');
 canvas.width = width * blockarea;
@@ -84,9 +109,6 @@ const ctx = canvas.getContext('2d', { alpha: true });
 
 const grid = new Grid(width, height, blockarea, margin, ctx);
 const snake = new Snake({x:10, y:10});
+const game = new Game(grid, snake, delay);
 
-const updates = snake.update();
-updates.forEach(x => {
-  grid.setPoint(x.point, x.state);
-});
-grid.render();
+game.run();
