@@ -70,11 +70,13 @@ class Snake {
     }
 
     const next = this.updatePosition()
-    const previousTailPosition = Object.assign({}, this.parts[this.parts.length - 1]);
+    this._previousTailPosition = Object.assign({}, this.parts[this.parts.length - 1]);
     this.parts[this.parts.length - 1] = next;
+    const lastPart = this.parts.splice(-1, 1)[0];
+    this.parts.unshift(lastPart);
 
     updates.push({ point: this.head, state: 'on' });
-    updates.push({ point: previousTailPosition, state: 'off' });
+    updates.push({ point: this._previousTailPosition, state: 'off' });
     return updates;
   }
 
@@ -99,6 +101,15 @@ class Snake {
 
   get head() {
     return Object.assign({}, this.parts[0]);
+  }
+
+  get previousTailPosition() {
+    return this._previousTailPosition;
+  }
+
+  grow() {
+    this.parts.push(Object.assign({},this.previousTailPosition));
+    return { point:this.previousTailPosition, state:'on' };
   }
 
   get isAlive() {
@@ -135,18 +146,25 @@ class Game {
     while (true) {
       this.grid.render();
 
-      const updates = this.snake.update();
+      const snakeUpdates = this.snake.update();
 
       if (!this.snake.isAlive)
         break;
 
-      updates.forEach(x => {
+      snakeUpdates.forEach(x => {
         this.grid.setPoint(x.point, x.state);
       });
 
-      if(this.food && !this.food.isRendered) {
-        grid.setPoint(this.food, 'food');
-        this.food.isRendered = false;
+      if(this.food) {
+        if(!this.food.isRendered) {
+          grid.setPoint(this.food, 'food');
+          this.food.isRendered = false;
+        }
+        if(this.snake.collision(this.snake.head, this.food)) {
+          const growUpdate = this.snake.grow();
+          this.grid.setPoint(growUpdate.point, growUpdate.state);
+          this.food = null;
+        }
       }
 
       await this.sleep(delay);
