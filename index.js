@@ -52,6 +52,25 @@ class Grid {
   }
 }
 
+class Snake {
+  constructor(position) {
+    this.parts = [position];
+  }
+
+  update() {
+    let updates = [];
+    updates.push({
+      point: this.head,
+      state: 'on'
+    });
+    return updates;
+  }
+
+  get head() {
+    return Object.assign({}, this.parts[0]);
+  }
+}
+
 const width = 50;
 const height = 50;
 const blockarea = 10;
@@ -64,4 +83,10 @@ canvas.height = height * blockarea;
 const ctx = canvas.getContext('2d', { alpha: true });
 
 const grid = new Grid(width, height, blockarea, margin, ctx);
+const snake = new Snake({x:10, y:10});
+
+const updates = snake.update();
+updates.forEach(x => {
+  grid.setPoint(x.point, x.state);
+});
 grid.render();
