@@ -11,6 +11,7 @@ class Grid {
   }
 
   generateDataSet() {
+    this.updatedCells = [];
     this.dataset = [];
     for (let x = 0; x < width; x++) {
       this.dataset[x] = [height];
@@ -22,6 +23,7 @@ class Grid {
 
   setPoint(point, state) {
     this.dataset[point.x][point.y] = state;
+    this.updatedCells.push(point);
   }
 
   getPoint(point) {
@@ -29,19 +31,17 @@ class Grid {
   }
 
   render() {
-    for(let x=0; x<width; x++) {
-      for(let y=0; y<height; y++) {
-        const point = {x,y};
-        const state = this.getPoint(point);
-        this.ctx.fillStyle = this.getFillStyle(state);
-        ctx.clearRect(point.x * blockarea, point.y * blockarea, blocksize, blocksize);
-        ctx.fillRect(point.x * blockarea, point.y * blockarea, blocksize, blocksize);
-      }
+    for (let i = 0; i < this.updatedCells.length; i++) {
+      const point = this.updatedCells[i];
+      const state = this.getPoint(point);
+      this.ctx.fillStyle = this.getFillStyle(state);
+      ctx.clearRect(point.x * blockarea, point.y * blockarea, blocksize, blocksize);
+      ctx.fillRect(point.x * blockarea, point.y * blockarea, blocksize, blocksize);
     }
   }
 
   getFillStyle(state) {
-    switch(state) {
+    switch (state) {
       case 'on':
         return 'green';
       case 'off':
@@ -68,7 +68,7 @@ class Snake {
     }
 
     const next = this.updatePosition()
-    const previousTailPosition = Object.assign({},this.parts[this.parts.length - 1]);
+    const previousTailPosition = Object.assign({}, this.parts[this.parts.length - 1]);
     this.parts[this.parts.length - 1] = next;
 
     updates.push({ point: this.head, state: 'on' });
@@ -78,7 +78,7 @@ class Snake {
 
   updatePosition() {
     const next = Object.assign({}, this.parts[0]);
-    switch(this.direction) {
+    switch (this.direction) {
       case 'up':
         next.y--;
         break;
@@ -100,16 +100,16 @@ class Snake {
   }
 
   get isAlive() {
-    const collidesWithSelf = this.parts.filter(_ => this.collision(_,this.head)).length > 1;
+    const collidesWithSelf = this.parts.filter(_ => this.collision(_, this.head)).length > 1;
     const collidesWithEdge = this.head.x < 0 ||
-                             this.head.x >= height ||
-                             this.head.y < 0 ||
-                             this.head.y >= width;
+      this.head.x >= height ||
+      this.head.y < 0 ||
+      this.head.y >= width;
     return (!collidesWithEdge && !collidesWithSelf);
   }
 
   collision(a, b) {
-    return (a.x===b.x && a.y===b.y);
+    return (a.x === b.x && a.y === b.y);
   }
 }
 
@@ -122,16 +122,16 @@ class Game {
   async run() {
     while (true) {
       this.grid.render();
-      
+
       const updates = this.snake.update();
-      
-      if(!this.snake.isAlive)
+
+      if (!this.snake.isAlive)
         break;
 
       updates.forEach(x => {
         this.grid.setPoint(x.point, x.state);
       });
-  
+
       await this.sleep(delay);
     }
 
@@ -143,7 +143,7 @@ class Game {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  keydownHandler (event) {
+  keydownHandler(event) {
     if (this.snake.newDirection) return;
     switch (event.keyCode) {
       case 37: //left
@@ -176,7 +176,7 @@ canvas.height = height * blockarea;
 const ctx = canvas.getContext('2d', { alpha: true });
 
 const grid = new Grid(width, height, blockarea, margin, ctx);
-const snake = new Snake({x:10, y:10}, 'right');
+const snake = new Snake({ x: 10, y: 10 }, 'right');
 const game = new Game(grid, snake, delay);
 
 document.addEventListener('keydown', game.keydownHandler.bind(game));
