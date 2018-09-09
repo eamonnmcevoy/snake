@@ -46,6 +46,8 @@ class Grid {
         return 'green';
       case 'off':
         return 'lightgrey';
+      case 'food':
+        return 'purple';
       default:
         return 'lightgrey';
     };
@@ -117,9 +119,19 @@ class Game {
   constructor(grid, snake) {
     this.grid = grid;
     this.snake = snake;
+    this.food = null;
   }
 
   async run() {
+
+    setInterval(() => {
+      if (this.food === null) {
+        const x = Math.floor(Math.random() * (this.grid.width - 1 - 0)) + 0;
+        const y = Math.floor(Math.random() * (this.grid.height - 1 - 0)) + 0;
+        this.food = { x, y, isRendered: false };
+      }
+    }, 1000);
+
     while (true) {
       this.grid.render();
 
@@ -131,6 +143,11 @@ class Game {
       updates.forEach(x => {
         this.grid.setPoint(x.point, x.state);
       });
+
+      if(this.food && !this.food.isRendered) {
+        grid.setPoint(this.food, 'food');
+        this.food.isRendered = false;
+      }
 
       await this.sleep(delay);
     }
