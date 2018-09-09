@@ -131,6 +131,7 @@ class Game {
     this.grid = grid;
     this.snake = snake;
     this.food = null;
+    this.score = 0;
   }
 
   async run() {
@@ -164,6 +165,8 @@ class Game {
           const growUpdate = this.snake.grow();
           this.grid.setPoint(growUpdate.point, growUpdate.state);
           this.food = null;
+          this.score++;
+          document.getElementById("score").innerHTML = `Points: ${game.score}`;
         }
       }
 
@@ -215,5 +218,6 @@ const snake = new Snake({ x: 10, y: 10 }, 'right');
 const game = new Game(grid, snake, delay);
 
 document.addEventListener('keydown', game.keydownHandler.bind(game));
+document.getElementById("score").innerHTML = `Points: ${game.score}`;
 
 game.run();
