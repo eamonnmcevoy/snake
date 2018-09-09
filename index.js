@@ -58,16 +58,35 @@ class Snake {
   }
 
   update() {
-    let updates = [];
-    updates.push({
-      point: this.head,
-      state: 'on'
-    });
+    const updates = [];
+
+
+    const next = Object.assign({}, snake.parts[0]);
+    next.x++;
+    const previousTailPosition = Object.assign({},this.parts[this.parts.length - 1]);
+    this.parts[this.parts.length - 1] = next;
+
+
+    updates.push({ point: this.head, state: 'on' });
+    updates.push({ point: previousTailPosition, state: 'off' });
     return updates;
   }
 
   get head() {
     return Object.assign({}, this.parts[0]);
+  }
+
+  get isAlive() {
+    const collidesWithSelf = this.parts.filter(_ => this.collision(_,this.head)).length > 1;
+    const collidesWithEdge = this.head.x < 0 ||
+                             this.head.x >= height ||
+                             this.head.y < 0 ||
+                             this.head.y >= width;
+    return (!collidesWithEdge && !collidesWithSelf);
+  }
+
+  collision(a, b) {
+    return (a.x===b.x && a.y===b.y);
   }
 }
 
@@ -82,12 +101,19 @@ class Game {
       this.grid.render();
       
       const updates = this.snake.update();
+      
+      if(!this.snake.isAlive)
+        break;
+
       updates.forEach(x => {
         this.grid.setPoint(x.point, x.state);
       });
   
       await this.sleep(delay);
     }
+
+    document.getElementById("gameover").innerHTML = `You crashed!`;
+
   }
 
   sleep(ms) {
