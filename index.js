@@ -53,23 +53,46 @@ class Grid {
 }
 
 class Snake {
-  constructor(position) {
+  constructor(position, direction) {
     this.parts = [position];
+    this.direction = direction;
+    this.newDirection = null;
   }
 
   update() {
     const updates = [];
 
+    if (this.newDirection) {
+      this.direction = this.newDirection;
+      this.newDirection = null;
+    }
 
-    const next = Object.assign({}, snake.parts[0]);
-    next.x++;
+    const next = this.updatePosition()
     const previousTailPosition = Object.assign({},this.parts[this.parts.length - 1]);
     this.parts[this.parts.length - 1] = next;
-
 
     updates.push({ point: this.head, state: 'on' });
     updates.push({ point: previousTailPosition, state: 'off' });
     return updates;
+  }
+
+  updatePosition() {
+    const next = Object.assign({}, this.parts[0]);
+    switch(this.direction) {
+      case 'up':
+        next.y--;
+        break;
+      case 'down':
+        next.y++;
+        break;
+      case 'right':
+        next.x++;
+        break;
+      case 'left':
+        next.x--;
+        break;
+    }
+    return next;
   }
 
   get head() {
@@ -119,6 +142,25 @@ class Game {
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  keydownHandler (event) {
+    if (this.snake.newDirection) return;
+    switch (event.keyCode) {
+      case 37: //left
+        this.snake.newDirection = this.snake.direction !== 'right' ? 'left' : 'right';
+        break;
+      case 38: //up
+        this.snake.newDirection = this.snake.direction !== 'down' ? 'up' : 'down';
+        break;
+      case 39:  //right
+        this.snake.newDirection = this.snake.direction !== 'left' ? 'right' : 'left';
+        break;
+      case 40: //down
+        this.snake.newDirection = this.snake.direction !== 'up' ? 'down' : 'up';
+        break;
+    }
+
+  }
 }
 
 const width = 50;
@@ -134,7 +176,9 @@ canvas.height = height * blockarea;
 const ctx = canvas.getContext('2d', { alpha: true });
 
 const grid = new Grid(width, height, blockarea, margin, ctx);
-const snake = new Snake({x:10, y:10});
+const snake = new Snake({x:10, y:10}, 'right');
 const game = new Game(grid, snake, delay);
+
+document.addEventListener('keydown', game.keydownHandler.bind(game));
 
 game.run();
