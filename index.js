@@ -38,6 +38,7 @@ class Grid {
       ctx.clearRect(point.x * blockarea, point.y * blockarea, blocksize, blocksize);
       ctx.fillRect(point.x * blockarea, point.y * blockarea, blocksize, blocksize);
     }
+    this.updatedCells = [];
   }
 
   getFillStyle(state) {
@@ -157,10 +158,10 @@ class Game {
       });
 
       if(this.food) {
-        if(!this.food.isRendered) {
+        if(!this.food.isRendered)
           grid.setPoint(this.food, 'food');
-          this.food.isRendered = false;
-        }
+        this.food.isRendered = true;
+
         if(this.snake.collision(this.snake.head, this.food)) {
           const growUpdate = this.snake.grow();
           this.grid.setPoint(growUpdate.point, growUpdate.state);
@@ -206,7 +207,7 @@ const height = 50;
 const blockarea = 10;
 const margin = 1;
 const blocksize = blockarea - margin;
-const delay = 50;
+const delay = 75;
 
 const canvas = document.getElementById('game');
 canvas.width = width * blockarea;
